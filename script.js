@@ -33,7 +33,7 @@ openBtn.addEventListener('click', () => {
 
 // Countdown and candle blow effect
 function startCountdown() {
-    const countdownValues = ['3...', '2...', '1...'];
+    const countdownValues = ['Blow your candle in', '3', '2', '1', 'Make a wish!'];
     let index = 0;
     
     countdownText.classList.add('visible');
