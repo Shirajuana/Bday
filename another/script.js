@@ -14,12 +14,12 @@ const finalReveal    = document.getElementById('final-reveal');
 const starsLayer     = document.getElementById('stars-layer');
 const particlesLayer = document.getElementById('particles-layer');
 const confettiLayer  = document.getElementById('confetti-layer');
-const fireworksContainer = document.getElementById('fireworks-container');
-const candlesRow  = document.querySelector('.candles-row');
 const musicBtn       = document.getElementById('music-btn');
 const musicIcon      = document.getElementById('music-icon');
 const birthdayMusic  = document.getElementById('birthday-music');
-const bottomMessage = document.getElementById('bottom-message');
+const ribbonBills    = document.getElementById('ribbon-bills');
+const moneyRibbon    = document.querySelector('.money-ribbon');
+const slotButton     = document.getElementById('slot-button');
 
 const flames  = document.querySelectorAll('.flame');
 const smokes  = document.querySelectorAll('.smoke');
@@ -28,7 +28,6 @@ const envParticles = document.getElementById('env-particles');
 // ── State ─────────────────────────────────────────────────────────────────────
 let musicPlaying = false;
 let currentStrip = 0;
-let fireworksActive = false;
 
 // ── Envelope ambient particles ────────────────────────────────────────────────
 function spawnEnvParticles() {
@@ -54,7 +53,6 @@ openBtn.addEventListener('click', () => {
 
     // Step 1: open flap
     envelope.classList.add('open');
-    document.querySelector('.envelope-scene').classList.add('opening');
 
     // Step 2: after flap fully opens, crossfade screens
     setTimeout(() => {
@@ -114,50 +112,6 @@ function pulseTick() {
     countdownNum.classList.add('pulse');
 }
 
-// ── Sky Fireworks ─────────────────────────────────────────────────────────────
-function spawnSkyFireworks() {
-    if (!fireworksActive) return;
-
-    // Random location in the background area of the screen
-    const x = 5 + Math.random() * 90; 
-    const y = 5 + Math.random() * 80;
-
-    const firework = document.createElement('div');
-    firework.className = 'sky-firework';
-    firework.style.left = x + '%';
-    firework.style.top = y + '%';
-
-    const sparkCount = 35 + Math.floor(Math.random() * 20);
-    for (let i = 0; i < sparkCount; i++) {
-        const spark = document.createElement('div');
-        spark.className = 'sky-spark burst';
-        
-        // Even spherical spread with slight randomness
-        const angle = (Math.PI * 2 * i) / sparkCount + (Math.random() - 0.5) * 0.4;
-        const dist = 100 + Math.random() * 150;
-        const length = 20 + Math.random() * 30;
-        
-        spark.style.cssText = `
-            --angle: ${angle}rad;
-            --dist: ${dist}px;
-            --length: ${length}px;
-            animation-delay: ${Math.random() * 0.1}s;
-        `;
-        firework.appendChild(spark);
-    }
-
-    fireworksContainer.appendChild(firework);
-
-    // Clean up firework element
-    setTimeout(() => {
-        firework.remove();
-    }, 2500);
-
-    if (fireworksActive) {
-        setTimeout(spawnSkyFireworks, 400 + Math.random() * 600);
-    }
-}
-
 // ── Blow candles ──────────────────────────────────────────────────────────────
 function blowCandles() {
     flames.forEach((flame, idx) => {
@@ -180,10 +134,7 @@ function postBlowSequence() {
     playMusic();
     spawnStars(60);
     spawnFireflies(18);
-
-    // Start fireworks after candle fade
-    fireworksActive = true;
-    spawnSkyFireworks();
+    buildMoneyRibbon();
 
     setTimeout(() => {
         spawnConfetti(80);
@@ -191,9 +142,6 @@ function postBlowSequence() {
 
     setTimeout(() => {
         finalReveal.classList.add('show');
-        if (bottomMessage) {
-            bottomMessage.classList.add('show');
-        }
     }, 1400);
 }
 
@@ -265,6 +213,50 @@ function spawnConfetti(count) {
 
     // Clean up after animation
     setTimeout(() => confettiLayer.innerHTML = '', 7000);
+}
+
+// ── Money ribbon ──────────────────────────────────────────────────────────────
+const TOTAL_STRIPS = 6;
+
+function buildMoneyRibbon() {
+    ribbonBills.innerHTML = '';
+    currentStrip = 0;
+
+    for (let i = 0; i < TOTAL_STRIPS; i++) {
+        const strip = document.createElement('div');
+        strip.className = 'bill';
+        strip.setAttribute('aria-hidden', 'true');
+        ribbonBills.appendChild(strip);
+    }
+
+    ribbonBills.classList.add('show');
+    if (slotButton) {
+        slotButton.textContent = '✦ CLICK ✦';
+        slotButton.disabled = false;
+        slotButton.classList.remove('done');
+    }
+}
+
+function revealNextStrip() {
+    const strips = ribbonBills.querySelectorAll('.bill');
+    if (!strips.length || currentStrip >= strips.length) {
+        return;
+    }
+
+    const nextStrip = strips[currentStrip];
+    nextStrip.classList.add('visible');
+    nextStrip.setAttribute('aria-hidden', 'false');
+    currentStrip += 1;
+
+    if (currentStrip >= strips.length && slotButton) {
+        slotButton.textContent = '✦ COMPLETE ✦';
+        slotButton.disabled = true;
+        slotButton.classList.add('done');
+    }
+}
+
+if (moneyRibbon) {
+    moneyRibbon.addEventListener('click', revealNextStrip);
 }
 
 // ── Music control ─────────────────────────────────────────────────────────────
